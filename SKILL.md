@@ -5,7 +5,7 @@ description: Delegate network search and deep research to a local Grok-backed Ne
 
 # Grok Deep Search
 
-Use this skill to offload web search and deeper research passes to the local Grok gateway at `http://192.168.31.4:3005/v1`.
+Use this skill to offload web search and deeper research passes to a Grok-compatible OpenAI-style endpoint configured via a local `.env` file.
 
 Run the helper through `scripts/grok_search.py`.
 
@@ -67,4 +67,4 @@ Pass the saved `report.md`. The helper loads the existing report plus the latest
 - `references/prompt-contract.md` - prompt and output rules for `normal`, `deep`, and `continue`
 - `README.md` - installation and portability notes for copying this skill into another agent environment
 
-If the local gateway, key, or model changes later, update the constants near the top of `scripts/grok_search.py`.
+If the gateway, key, or model changes later, update `.env`. Start from `.env.example`.

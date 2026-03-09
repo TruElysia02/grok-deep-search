@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import os
-
 import argparse
 import json
 import re
@@ -13,9 +11,35 @@ from pathlib import Path
 from urllib import error, request
 
 
-BASE_URL = os.environ.get("GROK_BASE_URL", "http://192.168.31.4:3005/v1")
-API_KEY = os.environ.get("GROK_API_KEY", "")
-MODEL = os.environ.get("GROK_MODEL", "grok-4.20-beta")
+# ---------------------------------------------------------------------------
+# .env loader (stdlib only, no python-dotenv needed)
+# ---------------------------------------------------------------------------
+
+def _load_dotenv() -> dict[str, str]:
+    """Load variables from .env file next to the scripts/ directory (skill root)."""
+    env_path = Path(__file__).resolve().parent.parent / ".env"
+    if not env_path.is_file():
+        return {}
+    values: dict[str, str] = {}
+    for line in env_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key:
+            values[key] = value
+    return values
+
+
+ENV = _load_dotenv()
+
+BASE_URL = ENV.get("GROK_BASE_URL", "http://localhost:3005/v1")
+API_KEY = ENV.get("GROK_API_KEY", "")
+MODEL = ENV.get("GROK_MODEL", "grok-4.20-beta")
 TIMEOUT_SEC = 180
 DEFAULT_DEPTH = "deep"
 REPORT_FILE = "report.md"
@@ -108,8 +132,9 @@ def tail_text(content: str, *, limit: int = 12000) -> str:
 def call_chat(messages: list[ChatMessage], *, temperature: float = 0.2) -> str:
     if not API_KEY:
         raise GrokSearchError(
-            "GROK_API_KEY environment variable is not set. "
-            "Set it before running: set GROK_API_KEY=sk-your-key"
+            "GROK_API_KEY is not set in .env. "
+            "Create a .env file in the skill root directory. "
+            "See .env.example for reference."
         )
     payload = {
         "model": MODEL,
